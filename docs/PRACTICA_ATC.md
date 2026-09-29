@@ -17,9 +17,9 @@ contenedores STL, `std::unique_ptr`, excepciones y diseño de algoritmos.
 * `include/Configuracion.h`: todos los parámetros de la práctica (solo lectura).
 * Los ficheros que CMake copia a tu carpeta: `Avion`, `Helicoptero`, `Dron`, `ATC` y `main.cpp`.
 
-## Parte 1 — Las aeronaves (`students/Avion.cpp`, `Helicoptero.cpp`, `Dron.cpp`)
+## Parte 1 — Las aeronaves (`src/Avion.cpp`, `src/Helicoptero.cpp`, `src/Dron.cpp`)
 
-Implementa en cada clase, **respetando las reglas** de su cabecera (`students/Avion.h`, etc.):
+Implementa en cada clase, **respetando las reglas** de su cabecera (`include/Avion.h`, etc.):
 
 | Método | Qué debe hacer |
 |---|---|
@@ -47,7 +47,7 @@ Cuestión: ¿por qué `Tablero` y el renderer solo conocen `Aeronave` y no `Avio
 Usa `agregarPuntoRuta`, `insertarPuntoRuta`, `eliminarPuntoRuta`, `limpiarRuta` y `setIndiceRuta` desde tu ATC.
 Ejemplo pedido: la ruta `A → B → C` pasa durante la simulación a `A → D → E → B → C` (ver `prueba_rutas`).
 
-## Parte 3 — El ATC (`students/ATC.cpp`)
+## Parte 3 — El ATC (`src/ATC.cpp`)
 
 Implementa `ATC::actualizar(aeronaves, dt)`, que se llama **una vez por iteración, antes de `Tablero::avanzar`**.
 Debe recorrer las aeronaves **polimórficamente** (sin `dynamic_cast` salvo que lo justifiques) y conseguir, como mínimo:
@@ -72,9 +72,9 @@ y ejecútalos con tu ATC. Muestra por consola un resumen (aeronaves llegadas, co
 
 ## Entrega
 
-* Código de `students/` (+ cualquier clase que añadas), `include/ATC.h` y `alumno/main.cpp`.
+* Tus carpetas `src/` e `include/` (con cualquier clase que añadas) y `main.cpp`.
 * Breve memoria (1–2 páginas): diseño del ATC, estrategia de evitación de colisiones, casos límite y resultados.
-* **No modifiques** el código del simulador (la carpeta que descarga CMake). Sí puedes tocar todos los ficheros que CMake te copia a tu carpeta (`Avion`, `Helicoptero`, `Dron`, `ATC` y `main.cpp`, con sus `.h`).
+* **No modifiques** el código del simulador (la carpeta que descarga CMake). Sí puedes tocar todos los ficheros que CMake te copia a tu carpeta (`include/`, `src/` y `main.cpp`).
 
 ## Criterios de evaluación (orientativos)
 

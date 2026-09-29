@@ -7,7 +7,7 @@
 #
 # atc_practica():
 #   1. La primera vez COPIA a la carpeta del alumno las plantillas que tiene que completar
-#      (Avion, Helicoptero, Dron, ATC con sus .h) y un main.cpp de partida. Si ya existen, NO las toca.
+#      (include/*.h y src/*.cpp de Avion, Helicoptero, Dron y ATC) y un main.cpp de partida. Si ya existen, NO las toca.
 #   2. Compila SOLO esos ficheros del alumno y los enlaza con el simulador (que compila CMake una vez).
 #   3. Crea el ejecutable MiATC.
 # Argumento opcional EJEMPLOS: tambien compila los programas de ejemplo del repositorio (prueba_*.cpp),
@@ -20,10 +20,17 @@ function(atc_practica)
   get_filename_component(raiz "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/.." ABSOLUTE)
   set(dir "${CMAKE_SOURCE_DIR}")  # carpeta del proyecto del alumno
 
-  foreach(f Avion.h Avion.cpp Helicoptero.h Helicoptero.cpp Dron.h Dron.cpp ATC.h ATC.cpp)
-    if(NOT EXISTS "${dir}/${f}")
-      file(COPY "${raiz}/students/${f}" DESTINATION "${dir}")
-      message(STATUS "Plantilla creada en tu carpeta: ${f}")
+  # Estructura de tu carpeta:   include/*.h   src/*.cpp   main.cpp
+  foreach(f Avion.h Helicoptero.h Dron.h ATC.h)
+    if(NOT EXISTS "${dir}/include/${f}")
+      file(COPY "${raiz}/students/include/${f}" DESTINATION "${dir}/include")
+      message(STATUS "Plantilla creada en tu carpeta: include/${f}")
+    endif()
+  endforeach()
+  foreach(f Avion.cpp Helicoptero.cpp Dron.cpp ATC.cpp)
+    if(NOT EXISTS "${dir}/src/${f}")
+      file(COPY "${raiz}/students/src/${f}" DESTINATION "${dir}/src")
+      message(STATUS "Plantilla creada en tu carpeta: src/${f}")
     endif()
   endforeach()
   if(NOT EXISTS "${dir}/main.cpp")
@@ -33,8 +40,8 @@ function(atc_practica)
 
   # Tus ficheros: las aeronaves y el ATC forman una biblioteca; main.cpp, el ejecutable.
   add_library(aeronaves_alumno STATIC
-    "${dir}/Avion.cpp" "${dir}/Helicoptero.cpp" "${dir}/Dron.cpp" "${dir}/ATC.cpp")
-  target_include_directories(aeronaves_alumno PUBLIC "${dir}")
+    "${dir}/src/Avion.cpp" "${dir}/src/Helicoptero.cpp" "${dir}/src/Dron.cpp" "${dir}/src/ATC.cpp")
+  target_include_directories(aeronaves_alumno PUBLIC "${dir}/include")
   target_link_libraries(aeronaves_alumno PUBLIC AirTrafficCoreBase)
   if(MSVC)
     target_compile_options(aeronaves_alumno PRIVATE /W4)

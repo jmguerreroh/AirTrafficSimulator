@@ -33,7 +33,7 @@ if(ATC_USAR_SOLUCION_PROFESOR)
   set(ATC_AERONAVES_SRC solucion_profesor/Avion.cpp solucion_profesor/Helicoptero.cpp solucion_profesor/Dron.cpp)
 else()
   message(STATUS "Aeronaves: PLANTILLA DEL ALUMNO (students/)")
-  set(ATC_AERONAVES_SRC students/Avion.cpp students/Helicoptero.cpp students/Dron.cpp)
+  set(ATC_AERONAVES_SRC students/src/Avion.cpp students/src/Helicoptero.cpp students/src/Dron.cpp)
 endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/PracticaATC.cmake)  # define atc_practica() para el CMakeLists del alumno
@@ -112,9 +112,9 @@ target_include_directories(AirTrafficGraphics PRIVATE
 target_link_libraries(AirTrafficGraphics PUBLIC AirTrafficCoreBase PRIVATE glfw atc_glad atc_glm Threads::Threads)
 atc_warnings(AirTrafficGraphics)
 
-# ---- Lo que escribe el alumno: Avion, Helicoptero, Dron y ATC (con sus cabeceras, en students/) ------------
-add_library(AirTrafficAlumno STATIC ${ATC_AERONAVES_SRC} students/ATC.cpp)
-target_include_directories(AirTrafficAlumno PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/students)
+# ---- Lo que escribe el alumno: Avion, Helicoptero, Dron y ATC (cabeceras en students/include, fuentes en students/src) ------------
+add_library(AirTrafficAlumno STATIC ${ATC_AERONAVES_SRC} students/src/ATC.cpp)
+target_include_directories(AirTrafficAlumno PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/students/include)
 target_link_libraries(AirTrafficAlumno PUBLIC AirTrafficCoreBase)
 atc_warnings(AirTrafficAlumno)
 

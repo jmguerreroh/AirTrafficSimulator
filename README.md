@@ -38,13 +38,20 @@ cmake --build build
 ./build/MiATC
 ```
 
-Tras el primer `cmake` tu carpeta contiene, listos para completar:
+Tras el primer `cmake` tu carpeta queda así, con todo listo para completar:
 
-| Fichero | Qué haces |
-|---|---|
-| `Avion.cpp`, `Helicoptero.cpp`, `Dron.cpp` (y sus `.h`) | completar `actualizar`, `puedeMoverse`, `mover`, `calcularConsumo` (busca `// TODO: IMPLEMENTAR POR EL ALUMNO`) |
-| `ATC.cpp` y `ATC.h` | escribir el sistema de control de tráfico aéreo |
-| `main.cpp` | tu programa principal (aeronaves, rutas, ATC y bucle) |
+```
+MiPractica/
+├── CMakeLists.txt
+├── main.cpp                  ← tu programa principal (aeronaves, rutas, ATC y bucle)
+├── include/
+│   ├── Avion.h  Helicoptero.h  Dron.h     ← puedes añadirles atributos y métodos
+│   └── ATC.h
+└── src/
+    ├── Avion.cpp  Helicoptero.cpp  Dron.cpp   ← completar actualizar, puedeMoverse, mover, calcularConsumo
+    └── ATC.cpp                                    ← tu sistema de control de tráfico aéreo
+```
+Busca `// TODO: IMPLEMENTAR POR EL ALUMNO` en `src/`.
 
 Esos ficheros son **tuyos**: CMake no los vuelve a tocar. Cada vez que edites algo, repite `cmake --build build`
 (solo se recompila tu código). Si no tienes GLFW instalado, CMake lo descarga y compila él solo.

@@ -1,6 +1,6 @@
 // Ejemplo 8 - Plantilla del programa del alumno: crear el mundo, crear el ATC y ejecutar el bucle.
 //
-//   ATC   → decide (TODO: tu práctica, en students/ATC.cpp)
+//   ATC   → decide (TODO: tu práctica, en src/ATC.cpp)
 //   Tablero.avanzar(dt) → el simulador mueve el mundo, consume combustible y detecta colisiones
 //   Simulador.setTablero → muestra el resultado (no bloquea)
 #include <Simulador.h>

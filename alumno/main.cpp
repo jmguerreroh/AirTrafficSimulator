@@ -1,6 +1,6 @@
 // main.cpp - TU PROGRAMA. Crea el mundo, el ATC y el bucle de simulación (ver docs/PRACTICA_ATC.md).
 //
-//   ATC                  → decide (students/ATC.cpp)
+//   ATC                  → decide (src/ATC.cpp)
 //   Tablero::avanzar(dt) → el simulador mueve el mundo, consume combustible y detecta colisiones
 //   Simulador            → muestra el resultado (no bloquea)
 
