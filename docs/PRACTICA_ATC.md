@@ -174,7 +174,7 @@ Empieza por lo más sencillo: que cada aeronave sepa **hacia dónde puede ir** y
 3. Implementa **solo la parte manual** de `actualizar(dt)`: en modo `Manual`, avanzar en el rumbo ordenado `getVelocidad() * dt` casillas con `avanzar(...)`. En el avión, gira poco a poco hacia ese rumbo con `girarHaciaGrados(...)` antes de avanzar. El resto de `actualizar` lo completarás en la fase 3.
 4. En `main.cpp`, da órdenes y observa:
    * `he.mover(Direccion::N)`: el helicóptero avanza hacia el Norte y pinta las casillas de su color.
-   * `av.mover(Direccion::S)` con el avión mirando al Este: debe lanzar una excepción. Con `Direccion::SE`, el avión gira suavemente.
+   * `av.mover(Direccion::W)` con el avión mirando al Este: debe lanzar una excepción, porque el Oeste queda justo detrás (180°). Con `Direccion::S` (90°, en perpendicular) sí puede: el avión gira suavemente hasta ir hacia el Sur.
    * Haz que un helicóptero **dibuje un cuadrado**: cambia su dirección cada pocos segundos usando `tablero.getTiempo()` dentro del bucle.
 
 **Comprobación:** las órdenes válidas mueven la aeronave y las imposibles lanzan la excepción. El historial de casillas muestra el recorrido.
