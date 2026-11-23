@@ -8,7 +8,9 @@
 // Añade aquí los atributos y métodos privados que necesites.
 #pragma once
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "Aeronave.h"

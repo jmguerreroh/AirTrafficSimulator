@@ -107,6 +107,7 @@ Además de `MiATC`, en `build/` tienes:
 | `prueba_colisiones` | dos choques mientras tu ATC no haga nada; ninguno cuando funcione |
 | `prueba_varias`, `ejemplo_atc` | escenas con varias aeronaves de los tres tipos |
 | `test_aeronaves` | comprobación automática de las reglas de los tres tipos |
+| `test_atc` | comprobación automática del ATC en cuatro escenas (incluida una de diez aeronaves): 0 colisiones, ninguna aeronave sin combustible y todas llegan a su destino |
 
 Se ejecutan igual que tu programa, por ejemplo `./build/prueba_drones`. Mientras tus clases no estén completas, las aeronaves de estos programas tampoco se moverán.
 
@@ -275,6 +276,8 @@ Las aeronaves `SinCombustible` y `Colisionada` se quedan quietas y **siguen sien
 
 Monta una escena con **8 o más aeronaves** de los tres tipos, con rutas que se crucen y alguna con poco combustible. Tu ATC debe mantener la seguridad durante toda la simulación.
 
+**Comprobación:** `./build/test_atc` ejecuta sin ventana cuatro escenas (las de `prueba_colisiones`, `ejemplo_atc` y `prueba_varias`, y una de diez aeronaves que se cruzan en el centro) y exige en todas 0 colisiones, ninguna aeronave sin combustible y que todas las que tienen ruta lleguen a su destino. Cuando todo está bien, termina con `TODAS LAS COMPROBACIONES OK`.
+
 **Requisitos mínimos del ATC:**
 
 1. Controlar los tres tipos con una sola interfaz.
@@ -313,6 +316,6 @@ Al terminar cada escenario, muestra por consola un resumen: aeronaves que han ll
 |---|---|---|
 | Aeronaves (fases 2 a 4) | `test_aeronaves` pasa y los programas de prueba se comportan como describe la tabla de «Programas para comprobar tu trabajo» | 25 % |
 | Diseño orientado a objetos | herencia y polimorfismo bien usados, atributos privados, sin código duplicado entre los tres tipos y sin `dynamic_cast` injustificados | 20 % |
-| ATC: seguridad (fase 6.1 a 6.3 y 6.6) | 0 colisiones en `prueba_colisiones`, en `ejemplo_atc` y en tu escena de 8 o más aeronaves | 30 % |
+| ATC: seguridad (fase 6.1 a 6.3 y 6.6) | `test_atc` pasa y tu escena de 8 o más aeronaves termina sin colisiones | 30 % |
 | Rutas, combustible y emergencias (fases 5, 6.4 y 6.5) | los tres casos de la fase 5; ninguna aeronave sin combustible si podía evitarse; prioridades y obstáculos bien resueltos | 10 % |
 | Calidad, escenarios y memoria (fase 7) | código legible y sin avisos al compilar, los 3 escenarios propios y la memoria con las cuestiones respondidas | 15 % |

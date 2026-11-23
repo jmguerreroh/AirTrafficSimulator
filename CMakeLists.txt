@@ -19,22 +19,26 @@ option(ATC_BUILD_EXAMPLES "Compilar los ejemplos" ${ATC_IS_TOP_LEVEL})
 option(ATC_BUILD_TESTS "Compilar los tests" ${ATC_IS_TOP_LEVEL})
 
 # ---- ¿Solucion del profesor o plantilla del alumno? ---------------------------------------------
-# Si existe la carpeta solucion_profesor/, se compilan Avion/Helicoptero/Dron de referencia (los
-# ejemplos funcionan "de fabrica"). Al repartir el proyecto a los alumnos se BORRA esa carpeta y CMake
-# pasa solo a compilar students/ (plantilla con TODO). Se puede forzar con -DATC_USAR_SOLUCION_PROFESOR=OFF.
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solucion_profesor/Avion.cpp)
+# Si existe la carpeta solucion_profesor/ (no se publica), se compila la solucion completa: aeronaves, ATC y
+# main.cpp (los ejemplos funcionan "de fabrica"). Si no existe, se compila la plantilla del alumno
+# (students/ y alumno/main.cpp, con TODO). Se puede forzar con -DATC_USAR_SOLUCION_PROFESOR=OFF.
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solucion_profesor/src/Avion.cpp)
   set(ATC_SOLUCION_POR_DEFECTO ON)
 else()
   set(ATC_SOLUCION_POR_DEFECTO OFF)
 endif()
 option(ATC_USAR_SOLUCION_PROFESOR "Compilar la solucion de referencia en lugar de la plantilla" ${ATC_SOLUCION_POR_DEFECTO})
 if(ATC_USAR_SOLUCION_PROFESOR)
-  message(STATUS "Aeronaves: SOLUCION DEL PROFESOR (solucion_profesor/)")
-  set(ATC_AERONAVES_SRC solucion_profesor/Avion.cpp solucion_profesor/Helicoptero.cpp solucion_profesor/Dron.cpp)
+  message(STATUS "Aeronaves y ATC: SOLUCION DEL PROFESOR (solucion_profesor/)")
+  set(ATC_CODIGO_ALUMNO solucion_profesor)
+  set(ATC_MAIN_ALUMNO solucion_profesor/main.cpp)
 else()
-  message(STATUS "Aeronaves: PLANTILLA DEL ALUMNO (students/)")
-  set(ATC_AERONAVES_SRC students/src/Avion.cpp students/src/Helicoptero.cpp students/src/Dron.cpp)
+  message(STATUS "Aeronaves y ATC: PLANTILLA DEL ALUMNO (students/)")
+  set(ATC_CODIGO_ALUMNO students)
+  set(ATC_MAIN_ALUMNO alumno/main.cpp)
 endif()
+set(ATC_ALUMNO_SRC ${ATC_CODIGO_ALUMNO}/src/Avion.cpp ${ATC_CODIGO_ALUMNO}/src/Helicoptero.cpp
+                   ${ATC_CODIGO_ALUMNO}/src/Dron.cpp ${ATC_CODIGO_ALUMNO}/src/ATC.cpp)
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/PracticaATC.cmake)  # define atc_practica() para el CMakeLists del alumno
 
@@ -112,9 +116,9 @@ target_include_directories(AirTrafficGraphics PRIVATE
 target_link_libraries(AirTrafficGraphics PUBLIC AirTrafficCoreBase PRIVATE glfw atc_glad atc_glm Threads::Threads)
 atc_warnings(AirTrafficGraphics)
 
-# ---- Lo que escribe el alumno: Avion, Helicoptero, Dron y ATC (cabeceras en students/include, fuentes en students/src) ------------
-add_library(AirTrafficAlumno STATIC ${ATC_AERONAVES_SRC} students/src/ATC.cpp)
-target_include_directories(AirTrafficAlumno PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/students/include)
+# ---- Lo que escribe el alumno: Avion, Helicoptero, Dron y ATC (include/ y src/ de students o de la solucion) ----
+add_library(AirTrafficAlumno STATIC ${ATC_ALUMNO_SRC})
+target_include_directories(AirTrafficAlumno PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/${ATC_CODIGO_ALUMNO}/include)
 target_link_libraries(AirTrafficAlumno PUBLIC AirTrafficCoreBase)
 atc_warnings(AirTrafficAlumno)
 
@@ -129,9 +133,9 @@ if(ATC_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-# Programa del alumno: alumno/main.cpp -> ejecutable MiATC
-if(ATC_IS_TOP_LEVEL AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/alumno/main.cpp)
-  add_executable(MiATC alumno/main.cpp)
+# Programa del alumno (o de la solucion) -> ejecutable MiATC
+if(ATC_IS_TOP_LEVEL AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${ATC_MAIN_ALUMNO})
+  add_executable(MiATC ${ATC_MAIN_ALUMNO})
   target_link_libraries(MiATC PRIVATE AirTrafficSimulator)
 endif()
 

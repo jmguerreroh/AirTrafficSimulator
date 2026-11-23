@@ -8,6 +8,7 @@ cmake-build-*/
 # Solución de referencia de Avion, Helicoptero y Dron. Si esta carpeta no existe (como en el repositorio
 # que ven los alumnos), CMake compila automáticamente las plantillas de students/.
 solucion_profesor
+profesor
 # Documentación interna de arquitectura y del diseño de la práctica
 docs/ARQUITECTURA.md
 
