@@ -108,7 +108,8 @@ void Aeronave::revisarFinDeRuta() {
 }
 
 double Aeronave::getAlturaObjetivo() const {
-    return (modo_ == ModoControl::Ruta && tieneDestino()) ? static_cast<double>(ruta_[indiceRuta_].z) : alturaObjetivo_;
+    if (modo_ == ModoControl::Ruta && tieneDestino() && !alturaOrdenada_) return static_cast<double>(ruta_[indiceRuta_].z);
+    return alturaObjetivo_;
 }
 
 // ---------------------------------------------------------------------------- órdenes
@@ -125,6 +126,7 @@ void Aeronave::setAlturaObjetivo(double h) {
         throw std::invalid_argument("Altura " + std::to_string(h) + " fuera de los limites [" +
                                     std::to_string(cfg_.alturaMinima) + ", " + std::to_string(cfg_.alturaMaxima) + "]");
     alturaObjetivo_ = h;
+    alturaOrdenada_ = true;
 }
 
 void Aeronave::setCombustible(double c) {
@@ -192,7 +194,9 @@ bool Aeronave::comprobarLlegada() {
     bool cambio = false;
     while (estaActiva() && modo_ == ModoControl::Ruta && tieneDestino()) {
         const PuntoRuta& p = ruta_[indiceRuta_];
-        if (std::hypot(p.x - x_, p.y - y_) > getRadioCaptura() || std::fabs(p.z - z_) > cfg_.toleranciaLlegadaZ) break;
+        if (std::hypot(p.x - x_, p.y - y_) > getRadioCaptura()) break;
+        // Con una altura ordenada por el ATC, el punto se da por alcanzado aunque no esté a su altura.
+        if (!alturaOrdenada_ && std::fabs(p.z - z_) > cfg_.toleranciaLlegadaZ) break;
         ++indiceRuta_;
         cambio = true;
     }

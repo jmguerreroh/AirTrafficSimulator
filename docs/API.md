@@ -77,6 +77,8 @@ Ruta (se visita **en orden**; todas validan el punto y lanzan `std::invalid_argu
 Una aeronave en `Llegada` que recibe un punto nuevo vuelve a `Volando`.
 
 Órdenes: `setVelocidad(v)` (dentro de sus límites), `setAlturaObjetivo(z)`, `setCombustible(c)`, `seguirRuta()`.
+
+Altura: `getAlturaObjetivo()` es la altura hacia la que tiende la aeronave. En modo `Ruta` es la del destino actual, salvo que se haya dado una orden con `setAlturaObjetivo(z)`. Esa orden manda sobre la altura de los puntos: la aeronave sigue su ruta a la altura `z` (y da los puntos por alcanzados aunque no esté a su altura) hasta que se llame a `seguirRuta()`, que le devuelve la altura de sus puntos. `tieneAlturaOrdenada()` indica si hay una orden de altura vigente.
 Geometría: `distanciaHorizontalA(p)`, `gradosHacia(p)`, `getRadioCaptura()`.
 
 **A implementar en cada tipo:**
@@ -96,7 +98,7 @@ virtual double calcularConsumo(double dt) const = 0;  // combustible gastado en 
 
 | Modo | Significado |
 |---|---|
-| `Ruta` (por defecto) | piloto automático hacia el destino actual |
+| `Ruta` (por defecto) | piloto automático hacia el destino actual (a la altura ordenada, si la hay) |
 | `Manual` | tras `mover(dir)`: sigue esa dirección hasta `seguirRuta()` (no avanza la ruta) |
 | `Espera` | solo drones, tras `esperarEn(centro)` |
 

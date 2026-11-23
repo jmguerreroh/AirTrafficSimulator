@@ -242,10 +242,11 @@ Prueba con la escena de `main.cpp` (dos aviones de frente a la misma altura): el
 
 ### 6.2 Separar por altura
 
-La forma más sencilla de evitar un choque es que las aeronaves no estén a la misma altura. Cuando detectes un peligro, ordena a una de las dos que suba o baje con `setAlturaObjetivo(...)`.
+La forma más sencilla de evitar un choque es que las aeronaves no estén a la misma altura. Cuando detectes un peligro, ordena a una de las dos que suba o baje con `setAlturaObjetivo(...)`. La aeronave sigue su ruta a esa altura hasta que el peligro haya pasado y le devuelvas la altura de sus puntos con `seguirRuta()`.
 
 * ¿A cuál de las dos? Decide un criterio (por ejemplo, la que tenga más combustible o la que pueda subir más).
 * Respeta los límites de altura de cada tipo: un dron no pasa de 20 y un helicóptero de 40.
+* ¿Cuándo le devuelves su altura? Si lo haces demasiado pronto, el choque vuelve a estar ahí.
 
 **Objetivo:** 0 colisiones con los dos aviones de frente.
 

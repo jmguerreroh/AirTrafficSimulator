@@ -74,6 +74,19 @@ int main() {
     copia.buscar("HE-02")->agregarPuntoRuta({8, 8, 8});
     CHECK(t.buscar("HE-02")->getRuta().empty());  // independientes
 
+    // Altura ordenada: en modo Ruta manda sobre la de los puntos hasta seguirRuta().
+    Tablero t3(30, 30);
+    auto& ha = t3.crear<Helicoptero>("HE-01", Posicion{2, 2, 5});
+    ha.agregarPuntoRuta({20, 2, 12});
+    CHECK(!ha.tieneAlturaOrdenada() && ha.getAlturaObjetivo() == 12.0);
+    ha.setAlturaObjetivo(30.0);
+    CHECK(ha.tieneAlturaOrdenada() && ha.getAlturaObjetivo() == 30.0);
+    CHECK(ha.getModoControl() == ModoControl::Ruta);
+    ha.seguirRuta();
+    CHECK(!ha.tieneAlturaOrdenada() && ha.getAlturaObjetivo() == 12.0);
+    CHECK_THROWS(ha.setAlturaObjetivo(41.0), std::invalid_argument);  // helicóptero: altura máx 40
+    CHECK(!ha.tieneAlturaOrdenada());
+
     // Llegada → nuevo punto → vuelve a la vida.
     Tablero t2(20, 20);
     auto& h = t2.crear<Helicoptero>("HE-01", Posicion{2, 2, 5});

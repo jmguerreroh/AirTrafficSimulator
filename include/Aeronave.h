@@ -70,10 +70,17 @@ public:
 
     // ------------------------------------------------------------------- órdenes
     void setVelocidad(double velocidad);        // dentro de [velocidadMinima, velocidadMaxima]
-    void setAlturaObjetivo(double altura);      // altura a la que tender en modo Manual/Espera
+    // Altura a la que debe ir, en cualquier modo. En modo Ruta tiene preferencia sobre la altura de los
+    // puntos de la ruta: la aeronave sigue la ruta a esta altura (y da los puntos por alcanzados aunque
+    // no esté a su altura) hasta que se llame a seguirRuta().
+    void setAlturaObjetivo(double altura);
     void setCombustible(double combustible);    // (0, combustibleMaximo]
-    void seguirRuta() { modo_ = ModoControl::Ruta; }  // devuelve el control al piloto automático
-    double getAlturaObjetivo() const;           // en modo Ruta: la altura del destino actual
+    // Devuelve el control al piloto automático: sigue la ruta, con la altura de sus puntos.
+    void seguirRuta() { modo_ = ModoControl::Ruta; alturaOrdenada_ = false; }
+    bool tieneAlturaOrdenada() const { return alturaOrdenada_; }  // ¿hay un setAlturaObjetivo vigente?
+    // Altura hacia la que debe tender: la ordenada con setAlturaObjetivo o, en modo Ruta sin
+    // altura ordenada, la del destino actual.
+    double getAlturaObjetivo() const;
 
     // ------------------------------------- A IMPLEMENTAR EN CADA TIPO DE AERONAVE
     // Avanza la aeronave 'dt' segundos siguiendo su modo de control y sus reglas de movimiento.
@@ -135,6 +142,7 @@ private:
     double rumboGrados_;
     double rumboOrdenado_;
     double alturaObjetivo_;
+    bool alturaOrdenada_ = false;  // setAlturaObjetivo vigente (hasta seguirRuta)
     EstadoAeronave estado_ = EstadoAeronave::Volando;
     ModoControl modo_ = ModoControl::Ruta;
     std::vector<PuntoRuta> ruta_;

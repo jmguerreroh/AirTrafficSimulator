@@ -110,6 +110,20 @@ int main() {
         CHECK(std::fabs(he.getAltura() - 30.0) < 1e-6 && he.getPosicion().x == 5 && he.getPosicion().y == 5);
     }
 
+    // ---- Altura ordenada en ruta: sube, pasa los puntos a esa altura y seguirRuta la devuelve ----
+    {
+        Tablero t(60, 20);
+        auto& he = t.crear<Helicoptero>("HE-01", Posicion{5, 5, 10});
+        he.agregarPuntoRuta({35, 5, 10});
+        he.agregarPuntoRuta({50, 5, 10});
+        he.setAlturaObjetivo(25.0);
+        for (double s = 0; s < 20.0 && he.getIndiceRuta() == 0; s += 0.05) t.avanzar(0.05);
+        CHECK(he.getIndiceRuta() == 1 && std::fabs(he.getAltura() - 25.0) < 0.5);  // pasó el punto a 25
+        he.seguirRuta();
+        simular(t, 10.0);
+        CHECK(he.getEstado() == EstadoAeronave::Llegada && std::fabs(he.getAltura() - 10.0) <= 1.5);
+    }
+
     // ---- El dron: vuelo libre en diagonal, altura rápida, espera --------------------------
     {
         Tablero t(60, 60);
