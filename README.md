@@ -27,7 +27,7 @@ FetchContent_Declare(ATC
   GIT_TAG main)
 FetchContent_MakeAvailable(ATC)
 
-atc_practica()          # añade  atc_practica(EJEMPLOS)  para compilar también los ejemplos
+atc_practica(EJEMPLOS TESTS)   # EJEMPLOS: programas de prueba; TESTS: test_aeronaves (opcionales)
 ```
 
 Y compila:
@@ -70,7 +70,8 @@ En Windows: Visual Studio («Desarrollo para el escritorio con C++») y Git.
 En Windows: `cmake --build build --config Release` y `build\Release\MiATC.exe`.
 
 > Mientras `Avion`, `Helicoptero` y `Dron` estén sin completar, **las aeronaves no se mueven** (es lo esperado).
-> Empieza por ahí (ver [docs/PRACTICA_ATC.md](docs/PRACTICA_ATC.md)). Para comprobar tu trabajo puedes usar `atc_practica(EJEMPLOS)`.
+> Empieza por ahí (ver [docs/PRACTICA_ATC.md](docs/PRACTICA_ATC.md)). Para comprobar tu trabajo usa `atc_practica(EJEMPLOS TESTS)`: compila los programas de ejemplo y
+> `test_aeronaves` (se ejecuta con `./build/test_aeronaves`), todos con tus aeronaves.
 
 ## Tu primer programa
 

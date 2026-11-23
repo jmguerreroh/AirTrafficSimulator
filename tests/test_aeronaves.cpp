@@ -1,5 +1,5 @@
-// Comprueba la SOLUCIÓN DE REFERENCIA del profesor (solucion_profesor/). Solo se compila cuando
-// existe esa carpeta; los alumnos pueden usarlo como referencia de lo que debe ocurrir.
+// Comprueba las reglas de Avion, Helicoptero y Dron. En el repositorio se ejecuta contra la solución de
+// referencia; en el proyecto del alumno, con atc_practica(TESTS), contra sus propias clases.
 #include <cmath>
 #include <random>
 #include <stdexcept>
@@ -181,5 +181,6 @@ int main() {
         CHECK(std::fabs(a.first - b.first) < 1e-6 && std::fabs(a.second - b.second) < 1e-6);
         CHECK_THROWS(Tablero(5, 5).avanzar(0.0), std::invalid_argument);
     }
+    std::cout << "test_aeronaves: TODAS LAS COMPROBACIONES OK\n";
     return 0;
 }

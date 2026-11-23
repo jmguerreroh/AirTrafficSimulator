@@ -12,8 +12,10 @@
 #   3. Crea el ejecutable MiATC.
 # Argumento opcional EJEMPLOS: tambien compila los programas de ejemplo del repositorio (prueba_*.cpp),
 # usando las aeronaves DEL ALUMNO.
+# Argumento opcional TESTS: compila test_aeronaves contra las aeronaves DEL ALUMNO (se ejecuta con
+# ./build/test_aeronaves). Falla mientras queden TODO por completar.
 function(atc_practica)
-  cmake_parse_arguments(A "EJEMPLOS" "NOMBRE" "" ${ARGN})
+  cmake_parse_arguments(A "EJEMPLOS;TESTS" "NOMBRE" "" ${ARGN})
   if(NOT A_NOMBRE)
     set(A_NOMBRE MiATC)
   endif()
@@ -59,5 +61,11 @@ function(atc_practica)
       target_include_directories(${e} PRIVATE "${raiz}/examples")
       target_link_libraries(${e} PRIVATE aeronaves_alumno AirTrafficGraphics)
     endforeach()
+  endif()
+
+  if(A_TESTS)
+    add_executable(test_aeronaves "${raiz}/tests/test_aeronaves.cpp")
+    target_include_directories(test_aeronaves PRIVATE "${raiz}/tests")
+    target_link_libraries(test_aeronaves PRIVATE aeronaves_alumno)
   endif()
 endfunction()

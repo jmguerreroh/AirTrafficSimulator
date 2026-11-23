@@ -2,8 +2,11 @@
 //   1. AV-01 y DR-01 vuelan de frente a la misma altura        → COLISIÓN (llama 3D, estado Colisionada).
 //   2. HE-01 y DR-02 se cruzan a la misma altura                → COLISIÓN.
 //   3. AV-02 y AV-03 se cruzan con 20 unidades de diferencia    → se cruzan sin problema.
-// Sin ATC, nadie evita nada: ¡este es el problema que resolverán los alumnos!
+// La escena usa TU ATC: mientras ATC::actualizar no haga nada, nadie evita nada y se producen los dos choques.
+// Cuando tu ATC funcione, no debe haber ninguna colisión.
 #include "comun.h"
+
+#include <ATC.h>
 
 int main() {
     Simulador simulador;
@@ -31,7 +34,10 @@ int main() {
     av3.agregarPuntoRuta({28, 30, 70});
     av3.agregarPuntoRuta({58, 30, 70});
 
-    ejecutar(simulador, tablero, 20.0, [] {}, 0.05, 5.0);
+    ATC atc;
+    const double dt = 0.05;
+    ejecutar(simulador, tablero, 20.0, [&] { atc.actualizar(tablero.getAeronaves(), dt); }, dt, 5.0);
+    std::cout << "Colisiones: " << tablero.getColisiones().size() << "\n";
     simulador.fin();
     return 0;
 }
