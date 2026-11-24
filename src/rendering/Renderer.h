@@ -43,7 +43,7 @@ private:
     glm::vec3 toScene(double x, double y, double z) const;
     void updateDisplays(float dt);
     void rebuildGround();
-    void buildDynamicScene(SceneBatches& out) const;
+    void buildDynamicScene(const Camera& camera, SceneBatches& out) const;
     void buildLabels(const Camera& camera, const glm::ivec2& fb, std::vector<InstanceData>& out) const;
     void buildHud(const glm::ivec2& fb, std::vector<InstanceData>& out) const;
 

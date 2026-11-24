@@ -139,7 +139,7 @@ void Renderer::handleClick(const Camera& camera, const glm::vec2& ndc) {
     selectedId_ = best;  // clic en vacío = deseleccionar
 }
 
-void Renderer::buildDynamicScene(SceneBatches& out) const {
+void Renderer::buildDynamicScene(const Camera& camera, SceneBatches& out) const {
     const glm::vec4 shadow(0.03f, 0.03f, 0.05f, 0.0f);
     const float ms = modelScale_;
 
@@ -168,10 +168,16 @@ void Renderer::buildDynamicScene(SceneBatches& out) const {
                                                 rgba(ac.getColor(), 0.45f)));
         }
 
-        // Selección: flecha blanca que oscila sobre la aeronave.
+        // Selección: flecha blanca que oscila ENCIMA del cartel con el nombre. El cartel mide siempre lo
+        // mismo en pantalla, así que la flecha se coloca, hacia arriba de la pantalla, a la distancia que
+        // ocupa el cartel con el zoom actual (mismo ancla que en buildLabels).
         if (ac.getId() == selectedId_) {
-            const float bob = 0.15f * std::sin(wallTime_ * 5.0f);
-            glm::mat4 m = glm::translate(glm::mat4(1.0f), d.position + glm::vec3(0, (1.55f + bob) * ms, 0));
+            const glm::vec3 anchor = d.position + glm::vec3(0, 1.7f * ms, 0);
+            const float scale = camera.worldPerPixel(glm::length(anchor - camera.position())) * kFontPixelsOnScreen;
+            const float halfLabel = (0.5f * kGlyphHeight + 1.0f) * scale;  // media altura del cartel con su borde
+            const float bob = 0.15f * ms * (1.0f + std::sin(wallTime_ * 5.0f));  // solo por encima del cartel
+            const float lift = halfLabel + 3.0f * scale + 0.3f * ms + bob;    // + hueco + media flecha
+            glm::mat4 m = glm::translate(glm::mat4(1.0f), anchor + camera.up() * lift);
             m = glm::rotate(m, wallTime_ * 2.0f, glm::vec3(0, 1, 0));
             m = glm::rotate(m, -glm::half_pi<float>(), glm::vec3(0, 0, 1));  // punta hacia abajo
             m = glm::scale(m, glm::vec3(0.55f, 0.45f, 0.45f) * ms);
@@ -332,7 +338,7 @@ void Renderer::render(const Camera& camera, const glm::ivec2& fb, float dt) {
     updateDisplays(dt);
 
     SceneBatches dynamic;
-    buildDynamicScene(dynamic);
+    buildDynamicScene(camera, dynamic);
     dynamicCubes_.setInstances(dynamic.cubes);
     dynamicWedges_.setInstances(dynamic.wedges);
 

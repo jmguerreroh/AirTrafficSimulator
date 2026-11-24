@@ -150,12 +150,20 @@ Cada fase incluye además un **ejemplo** corto. Los ejemplos enseñan a **usar**
 
 Antes de mover nada, aprende a crear el mundo. Mientras no completes las aeronaves, **no se moverán**: es lo esperado y te viene bien para ver con calma dónde aparece cada una.
 
-1. En `main.cpp`, crea varias aeronaves de los tres tipos en **posiciones y alturas distintas**:
+Tu `main.cpp` ya trae una escena de partida, con tres partes:
+
+* **Las aeronaves y sus rutas:** dos aviones de frente a la misma altura (`AV-01` y `AV-02`), un helicóptero (`HE-01`) y un dron (`DR-01`).
+* **El ATC**, que de momento no hace nada.
+* **El bucle principal**, que en cada iteración deja decidir al ATC, hace avanzar el tablero y lo muestra en la ventana.
+
+Ejecútalo antes de cambiar nada (`./build/MiATC`) y lee el código para entender cada parte. No borres los dos aviones de frente: los usarás en la fase 6 para probar el ATC.
+
+1. Añade en `main.cpp`, después de las que ya hay, varias aeronaves de los tres tipos en **posiciones y alturas distintas**. Cada una necesita un id que no exista ya:
 
    ```cpp
-   tablero.crear<Avion>("AV-01", Posicion{5, 5, 30}, Direccion::E);
-   tablero.crear<Helicoptero>("HE-01", Posicion{30, 10, 15});
-   tablero.crear<Dron>("DR-01", Posicion{50, 50, 5});
+   tablero.crear<Avion>("AV-03", Posicion{5, 5, 30}, Direccion::E);
+   tablero.crear<Helicoptero>("HE-02", Posicion{30, 15, 15});
+   tablero.crear<Dron>("DR-02", Posicion{50, 50, 5});
    ```
 
    Ejecuta y localízalas en la ventana. Haz **clic** sobre cada una para ver su panel (tipo, altura, combustible...). Usa la vista cenital (tecla `2`) para comprobar las coordenadas: `x` crece hacia el Este y `y` hacia el Norte.
@@ -164,7 +172,7 @@ Antes de mover nada, aprende a crear el mundo. Mientras no completes las aeronav
 
    ```cpp
    try {
-       tablero.crear<Avion>("AV-02", Posicion{20, 20, 5}, Direccion::N);  // un avión no baja de 10
+       tablero.crear<Avion>("AV-04", Posicion{20, 20, 5}, Direccion::N);  // un avión no baja de 10
    } catch (const std::exception& e) {
        std::cout << "No se ha podido crear: " << e.what() << "\n";
    }
@@ -181,8 +189,6 @@ Antes de mover nada, aprende a crear el mundo. Mientras no completes las aeronav
 **Comprobación:** las aeronaves aparecen donde las has puesto y los errores se informan sin que el programa termine de golpe.
 
 **Cuestión:** `getAeronaves()` devuelve un `std::vector<std::unique_ptr<Aeronave>>`. ¿Por qué el vector guarda punteros a `Aeronave` y no objetos `Avion`, `Helicoptero` o `Dron`? ¿Quién es el dueño de cada aeronave?
-
-<div style="page-break-before: always;"></div>
 
 ## Fase 2. Control manual
 
@@ -204,17 +210,15 @@ Empieza por lo más sencillo: que cada aeronave sepa **hacia dónde puede ir** y
 **Ejemplo:** un helicóptero que va hacia el Norte y, a los 5 segundos, gira hacia el Este.
 
 ```cpp
-auto& he = tablero.crear<Helicoptero>("HE-01", Posicion{10, 10, 15});
+// Antes del bucle, con las demás aeronaves:
+auto& he = tablero.crear<Helicoptero>("HE-03", Posicion{10, 10, 15});
 he.mover(Direccion::N);  // desde ahora va hacia el Norte (modo Manual)
 bool haGirado = false;
-while (simulador.abierto() && tablero.getTiempo() < 12.0) {
-    if (!haGirado && tablero.getTiempo() >= 5.0) {
-        he.mover(Direccion::E);
-        haGirado = true;
-    }
-    tablero.avanzar(dt);
-    simulador.setTablero(tablero);
-    std::this_thread::sleep_for(std::chrono::duration<double>(dt));
+
+// Dentro del bucle, antes de tablero.avanzar(dt):
+if (!haGirado && tablero.getTiempo() >= 5.0) {
+    he.mover(Direccion::E);
+    haGirado = true;
 }
 ```
 
@@ -243,19 +247,17 @@ En los tres, la altura se acerca poco a poco a `getAlturaObjetivo()` con `acerca
 **Ejemplo:** un dron con una ruta de dos puntos que avisa por consola cada vez que alcanza uno.
 
 ```cpp
-auto& dr = tablero.crear<Dron>("DR-01", Posicion{5, 5, 5});
-dr.agregarPuntoRuta({30, 30, 15});  // primero aquí...
-dr.agregarPuntoRuta({50, 10, 5});   // ...y después aquí
+// Antes del bucle:
+auto& dr = tablero.crear<Dron>("DR-03", Posicion{5, 5, 5});
+dr.agregarPuntoRuta({20, 20, 15});  // primero aquí...
+dr.agregarPuntoRuta({5, 20, 5});    // ...y después aquí
 std::size_t destino = dr.getIndiceRuta();
-while (simulador.abierto() && tablero.getTiempo() < 30.0) {
-    tablero.avanzar(dt);
-    if (dr.getIndiceRuta() != destino) {
-        destino = dr.getIndiceRuta();
-        std::cout << "t=" << tablero.getTiempo() << " s: " << dr.getId()
-                  << " ha alcanzado un punto (" << aTexto(dr.getEstado()) << ")\n";
-    }
-    simulador.setTablero(tablero);
-    std::this_thread::sleep_for(std::chrono::duration<double>(dt));
+
+// Dentro del bucle, después de tablero.avanzar(dt):
+if (dr.getIndiceRuta() != destino) {
+    destino = dr.getIndiceRuta();
+    std::cout << "t=" << tablero.getTiempo() << " s: " << dr.getId()
+              << " ha alcanzado un punto (" << aTexto(dr.getEstado()) << ")\n";
 }
 ```
 
@@ -276,8 +278,8 @@ Pistas para el modo `Ruta` de `actualizar`: si hay destino (`tieneDestino()`), a
 **Ejemplo:** un dron con muy poco combustible que informa de su depósito.
 
 ```cpp
-auto& dr = tablero.crear<Dron>("DR-01", Posicion{5, 5, 5});
-dr.agregarPuntoRuta({50, 50, 5});
+auto& dr = tablero.crear<Dron>("DR-04", Posicion{55, 55, 5});
+dr.agregarPuntoRuta({55, 10, 5});
 dr.setCombustible(3.0);
 // En el bucle, después de tablero.avanzar(dt):
 std::cout << dr.getId() << " " << dr.getPorcentajeCombustible() << "% "
