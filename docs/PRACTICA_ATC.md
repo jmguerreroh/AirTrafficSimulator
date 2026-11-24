@@ -120,6 +120,8 @@ Se ejecutan igual que tu programa, por ejemplo `./build/prueba_drones`. Mientras
 
 La práctica se hace **por fases**. Cada fase añade una sola cosa nueva, tiene algo que **ver** en la ventana y una forma de **comprobar** que está bien antes de seguir. Al final de cada fase hay una **cuestión** para la memoria.
 
+Cada fase incluye además un **ejemplo** corto. Los ejemplos enseñan a **usar** el simulador desde `main.cpp` o desde el ATC. El código de cada aeronave lo escribes tú, con las herramientas de la [API](API.md) y las pistas de cada fase.
+
 | Fase | Qué haces | Qué ves |
 |---|---|---|
 | 1 | Poblar el cielo desde `main.cpp` | aeronaves quietas donde tú digas |
@@ -129,6 +131,18 @@ La práctica se hace **por fases**. Cada fase añade una sola cosa nueva, tiene 
 | 5 | Rutas dinámicas | rutas que cambian en mitad del vuelo |
 | 6 | El ATC, paso a paso | primero avisa de los peligros, luego los evita |
 | 7 | Escenarios propios | tu ATC frente a situaciones difíciles |
+
+## Ideas básicas del simulador
+
+* **El `Tablero` es el mundo.** Contiene las aeronaves y hace avanzar el tiempo. El `Simulador` (la ventana) solo muestra una copia suya.
+* **El tiempo es simulado**, en segundos, y no depende de los FPS de la ventana.
+* **`dt` y `h`.** `dt` es el tiempo que se pide avanzar (`tablero.avanzar(0.1)`). El tablero lo divide en subpasos `h` de como mucho 0,025 s, y es `h` lo que reciben tus `actualizar(dt)` y `calcularConsumo(dt)`.
+* **Dos funciones se llaman `avanzar`.** `tablero.avanzar(dt)` hace avanzar el mundo. `avanzar(rumbo, distancia)` es una herramienta protegida de la aeronave que la desplaza esa distancia, y se usa dentro de `actualizar`.
+* **Mover una aeronave.** Hay dos maneras, y en las dos la aeronave solo se desplaza mientras el tablero avanza:
+  * **Por ruta** (modo por defecto): se le dan puntos con `agregarPuntoRuta(p)` y el piloto automático va a ellos en orden.
+  * **Manual:** `mover(Direccion::N)` fija una dirección y la aeronave la sigue hasta que se llame a `seguirRuta()`. Lanza `std::invalid_argument` si su tipo no permite esa dirección (`puedeMoverse(d)` lo comprueba antes).
+* **Posiciones.** `Posicion{x, y, z}` son enteros (casilla y altura), y un `PuntoRuta` es lo mismo. Los valores exactos, con decimales, se leen con `getX()`, `getY()` y `getAltura()`.
+* **Rumbos en grados:** N = 0°, E = 90°, S = 180° y W = 270°.
 
 <div style="page-break-before: always;"></div>
 
@@ -146,7 +160,16 @@ Antes de mover nada, aprende a crear el mundo. Mientras no completes las aeronav
 
    Ejecuta y localízalas en la ventana. Haz **clic** sobre cada una para ver su panel (tipo, altura, combustible...). Usa la vista cenital (tecla `2`) para comprobar las coordenadas: `x` crece hacia el Este y `y` hacia el Norte.
 2. Cambia las alturas y observa la **sombra y la línea vertical**: así se lee la altura en 3D.
-3. Provoca errores a propósito: una aeronave fuera del tablero, dos con el mismo id, un avión a una altura que no admite. Cada caso lanza una excepción. Captúrala con `try`/`catch` y muestra el mensaje con `e.what()`.
+3. Provoca errores a propósito: una aeronave fuera del tablero, dos con el mismo id, un avión a una altura que no admite. Cada caso lanza una excepción. Captúrala con `try`/`catch` y muestra el mensaje con `e.what()`:
+
+   ```cpp
+   try {
+       tablero.crear<Avion>("AV-02", Posicion{20, 20, 5}, Direccion::N);  // un avión no baja de 10
+   } catch (const std::exception& e) {
+       std::cout << "No se ha podido crear: " << e.what() << "\n";
+   }
+   ```
+
 4. Recorre todas las aeronaves e imprime por consola su id, su tipo y su altura:
 
    ```cpp
@@ -178,11 +201,34 @@ Empieza por lo más sencillo: que cada aeronave sepa **hacia dónde puede ir** y
    * `av.mover(Direccion::W)` con el avión mirando al Este: debe lanzar una excepción, porque el Oeste queda justo detrás (180°). Con `Direccion::S` (90°, en perpendicular) sí puede: el avión gira suavemente hasta ir hacia el Sur.
    * Haz que un helicóptero **dibuje un cuadrado**: cambia su dirección cada pocos segundos usando `tablero.getTiempo()` dentro del bucle.
 
+**Ejemplo:** un helicóptero que va hacia el Norte y, a los 5 segundos, gira hacia el Este.
+
+```cpp
+auto& he = tablero.crear<Helicoptero>("HE-01", Posicion{10, 10, 15});
+he.mover(Direccion::N);  // desde ahora va hacia el Norte (modo Manual)
+bool haGirado = false;
+while (simulador.abierto() && tablero.getTiempo() < 12.0) {
+    if (!haGirado && tablero.getTiempo() >= 5.0) {
+        he.mover(Direccion::E);
+        haGirado = true;
+    }
+    tablero.avanzar(dt);
+    simulador.setTablero(tablero);
+    std::this_thread::sleep_for(std::chrono::duration<double>(dt));
+}
+```
+
+Para escribir `puedeMoverse`, `mover` y la parte manual de `actualizar` te bastan estas herramientas:
+
+* `gradosDe(Direccion::S)` da el rumbo de una dirección en grados: 180.
+* `diferenciaAngular(90.0, 180.0)` dice cuánto hay que girar de un rumbo a otro: 90 (positivo es a la derecha).
+* `setRumboOrdenadoGrados(g)` guarda el rumbo pedido con `mover` y `getRumboOrdenadoGrados()` lo lee.
+* `avanzar(90.0, 0.5)` desplaza la aeronave media casilla hacia el Este.
+* `girarHaciaGrados(180.0, 10.0)` gira el rumbo hacia el Sur, como mucho 10°.
+
 **Comprobación:** las órdenes válidas mueven la aeronave y las imposibles lanzan la excepción. El historial de casillas muestra el recorrido.
 
 **Cuestión:** `mover` es un método virtual puro de `Aeronave`. Cuando escribes `aeronave->mover(d)` sobre un puntero a `Aeronave`, ¿cómo sabe el programa qué versión ejecutar? ¿Qué pasaría si `mover` no fuera virtual?
-
-<div style="page-break-before: always;"></div>
 
 ## Fase 3. Piloto automático: seguir la ruta
 
@@ -194,11 +240,30 @@ Ahora cada aeronave debe ir sola hacia los puntos de su ruta (modo `Ruta`). Te r
 
 En los tres, la altura se acerca poco a poco a `getAlturaObjetivo()` con `acercarAltura(...)`. Dale a cada aeronave de tu `main.cpp` una ruta de dos o tres puntos con `agregarPuntoRuta` y comprueba que la recorre.
 
+**Ejemplo:** un dron con una ruta de dos puntos que avisa por consola cada vez que alcanza uno.
+
+```cpp
+auto& dr = tablero.crear<Dron>("DR-01", Posicion{5, 5, 5});
+dr.agregarPuntoRuta({30, 30, 15});  // primero aquí...
+dr.agregarPuntoRuta({50, 10, 5});   // ...y después aquí
+std::size_t destino = dr.getIndiceRuta();
+while (simulador.abierto() && tablero.getTiempo() < 30.0) {
+    tablero.avanzar(dt);
+    if (dr.getIndiceRuta() != destino) {
+        destino = dr.getIndiceRuta();
+        std::cout << "t=" << tablero.getTiempo() << " s: " << dr.getId()
+                  << " ha alcanzado un punto (" << aTexto(dr.getEstado()) << ")\n";
+    }
+    simulador.setTablero(tablero);
+    std::this_thread::sleep_for(std::chrono::duration<double>(dt));
+}
+```
+
+Pistas para el modo `Ruta` de `actualizar`: si hay destino (`tieneDestino()`), averigua hacia dónde está con `gradosHacia(getDestinoActual())` y a qué distancia con `distanciaHorizontalA(...)`, y avanza sin pasarte del punto. No tienes que cambiar tú de punto: cuando lo alcanzas, el tablero pasa al siguiente.
+
 **Comprobación:** ejecuta `./build/prueba_drones`, `./build/prueba_helicopteros` y `./build/prueba_aviones`, y compara lo que ves con lo que describe la tabla de «Programas para comprobar tu trabajo». Después ejecuta `./build/test_aeronaves`: comprueba las reglas de los tres tipos (direcciones, que el avión no se para, que el helicóptero no va en diagonal...). Si algo falla, te dice el fichero y la línea de la comprobación; cuando todo está bien, termina con `TODAS LAS COMPROBACIONES OK`.
 
 **Cuestión:** los tres tipos hacen cosas parecidas (seguir la ruta, cambiar la altura). ¿Qué código has repetido? ¿Podría ir en la clase base o en un método común? ¿Qué ventaja tiene que `Tablero` y la ventana solo conozcan `Aeronave`? ¿Qué tendrías que tocar para añadir un cuarto tipo, por ejemplo un globo?
-
-<div style="page-break-before: always;"></div>
 
 ## Fase 4. Combustible
 
@@ -207,6 +272,19 @@ En los tres, la altura se acerca poco a poco a `getAlturaObjetivo()` con `acerca
    * el helicóptero gasta **también cuando está quieto** (vuelo estacionario);
    * el dron gasta poco, pero su depósito es pequeño.
 2. Pon a una aeronave poco combustible con `setCombustible(...)` y observa cómo pasa a `SinCombustible`: queda inmóvil, en gris, y **sigue siendo un obstáculo** para las demás.
+
+**Ejemplo:** un dron con muy poco combustible que informa de su depósito.
+
+```cpp
+auto& dr = tablero.crear<Dron>("DR-01", Posicion{5, 5, 5});
+dr.agregarPuntoRuta({50, 50, 5});
+dr.setCombustible(3.0);
+// En el bucle, después de tablero.avanzar(dt):
+std::cout << dr.getId() << " " << dr.getPorcentajeCombustible() << "% "
+          << aTexto(dr.getEstado()) << "\n";
+```
+
+`calcularConsumo(dt)` devuelve lo que se gasta en `dt` segundos, es decir, el consumo por segundo de la fórmula multiplicado por `dt`. No descuentes tú el combustible: lo hace el tablero.
 
 **Comprobación:** en `prueba_combustible`, las aeronaves se quedan sin combustible en este orden: AV-01, DR-01, HE-01 (en vuelo estacionario) y, por último, HE-02 (que vuela despacio).
 
@@ -219,6 +297,28 @@ Una ruta no es fija: se puede cambiar durante el vuelo con `agregarPuntoRuta`, `
 1. **Patrulla:** un helicóptero recorre los cuatro vértices de un cuadrado y, al llegar al último, vuelve a empezar sin detenerse, durante toda la simulación.
 2. **Vuelta a base:** cuando a un dron le quede menos de la mitad del combustible, abandona su ruta y vuelve a su punto de partida, que pasa a ser su único destino.
 3. **Desvío:** a los 10 segundos, una aeronave con ruta `A → B → C` debe pasar por un punto `D` entre `B` y `C`, pero solo si todavía no ha llegado a `B`. Si ya lo ha pasado, `D` se añade al final.
+
+**Ejemplo:** a los 5 segundos, un helicóptero recibe un punto intermedio que pasa a ser su destino. La función `mostrarRuta` imprime la ruta y marca con `*` el destino actual.
+
+```cpp
+void mostrarRuta(const Aeronave& a) {
+    std::cout << a.getId() << ":";
+    for (std::size_t i = 0; i < a.getRuta().size(); ++i) {
+        const PuntoRuta& p = a.getRuta()[i];
+        std::cout << (i == a.getIndiceRuta() ? " *" : " ")
+                  << "(" << p.x << "," << p.y << "," << p.z << ")";
+    }
+    std::cout << "\n";
+}
+
+// En el bucle:
+if (!desviado && tablero.getTiempo() >= 5.0 && he.tieneDestino()) {
+    mostrarRuta(he);
+    he.insertarPuntoRuta(he.getIndiceRuta(), {20, 40, 10});  // nuevo destino actual
+    mostrarRuta(he);
+    desviado = true;
+}
+```
 
 **Comprobación:** la línea de ruta de la ventana muestra los cambios al momento. Imprime también la ruta por consola (`getRuta()` y `getIndiceRuta()`) antes y después de cada cambio.
 
@@ -238,6 +338,20 @@ Tu primer ATC **no da ninguna orden**: solo vigila e informa.
 * Si están cerca, imprime un aviso: `AVISO t=12.3s: AV-01 y AV-02 a 4 casillas y 0.5 de altura`.
 * Usa como referencia la regla de colisión (casillas adyacentes y menos de `umbralColisionAltura` de diferencia de altura) y deja un **margen de seguridad** mayor para avisar con tiempo.
 
+**Ejemplo:** el recorrido de todas las parejas, sin saber de qué tipo es cada aeronave.
+
+```cpp
+for (std::size_t i = 0; i < aeronaves.size(); ++i) {
+    for (std::size_t j = i + 1; j < aeronaves.size(); ++j) {
+        Aeronave& a = *aeronaves[i];
+        Aeronave& b = *aeronaves[j];
+        if (!a.estaActiva() || !b.estaActiva()) continue;
+        const double dz = std::fabs(a.getAltura() - b.getAltura());
+        // ... distancia horizontal, ¿están cerca?, aviso
+    }
+}
+```
+
 Prueba con la escena de `main.cpp` (dos aviones de frente a la misma altura): el ATC debe avisar **antes** de que choquen.
 
 ### 6.2 Separar por altura
@@ -248,11 +362,29 @@ La forma más sencilla de evitar un choque es que las aeronaves no estén a la m
 * Respeta los límites de altura de cada tipo: un dron no pasa de 20 y un helicóptero de 40.
 * ¿Cuándo le devuelves su altura? Si lo haces demasiado pronto, el choque vuelve a estar ahí.
 
+**Ejemplo:** `b` cede subiendo 5 sin pasarse de la altura máxima de su tipo y, más adelante, recupera la de su ruta.
+
+```cpp
+const double tope = b.getConfiguracion().alturaMaxima;
+b.setAlturaObjetivo(std::min(b.getAltura() + 5.0, tope));
+// ... iteraciones después, cuando ya no hay peligro:
+if (b.tieneAlturaOrdenada()) b.seguirRuta();
+```
+
 **Objetivo:** 0 colisiones con los dos aviones de frente.
 
 ### 6.3 Anticipar
 
 Detectar el peligro cuando ya están cerca puede ser tarde: un avión no se para y sube despacio. Estima dónde estará cada aeronave dentro de unos segundos (posición actual más velocidad por tiempo, en la dirección de su rumbo) y actúa si las posiciones futuras se acercan.
+
+**Ejemplo:** dónde estará `a` dentro de `t` segundos si sigue recta (el rumbo 0° es el Norte, que es `y` creciente).
+
+```cpp
+const double t = 5.0;
+const double rumbo = a.getRumboGrados() * 3.14159265358979 / 180.0;
+const double xFutura = a.getX() + std::sin(rumbo) * a.getVelocidad() * t;
+const double yFutura = a.getY() + std::cos(rumbo) * a.getVelocidad() * t;
+```
 
 Si no hay altura disponible para separar a dos aeronaves, usa otras herramientas:
 
@@ -267,11 +399,27 @@ Si no hay altura disponible para separar a dos aeronaves, usa otras herramientas
 * Si una aeronave va a quedarse sin combustible antes de llegar, dale **prioridad**: que sean las demás las que se aparten, o acórtale la ruta.
 * Ordena las aeronaves por urgencia (por ejemplo, menos combustible primero) y resuelve los conflictos en ese orden.
 
+**Ejemplo:** una lista de las aeronaves activas, de menos a más combustible. Se ordenan punteros, así que las aeronaves no se copian ni cambian de sitio en el tablero.
+
+```cpp
+std::vector<Aeronave*> orden;
+for (auto& a : aeronaves)
+    if (a->estaActiva()) orden.push_back(a.get());
+std::sort(orden.begin(), orden.end(), [](const Aeronave* x, const Aeronave* y) {
+    return x->getCombustible() < y->getCombustible();
+});
+```
+
 ### 6.5 Emergencias y obstáculos
 
-Las aeronaves `SinCombustible` y `Colisionada` se quedan quietas y **siguen siendo obstáculos**. Tu ATC debe desviar a quien vaya a pasar por encima de ellas.
+Las aeronaves `SinCombustible` y `Colisionada` se quedan quietas y **siguen siendo obstáculos**. Tu ATC debe desviar a quien vaya a pasar por encima de ellas. Fíjate en que `estaActiva()` es falso para ellas: si tu recorrido de parejas las salta, no las verás.
 
-<div style="page-break-before: always;"></div>
+**Ejemplo:**
+
+```cpp
+const bool obstaculo = a.getEstado() == EstadoAeronave::SinCombustible ||
+                       a.getEstado() == EstadoAeronave::Colisionada;
+```
 
 ### 6.6 Prueba de estrés
 
@@ -303,7 +451,21 @@ En `main.cpp`, crea al menos **3 escenarios** distintos y ejecútalos con tu ATC
 
 Al terminar cada escenario, muestra por consola un resumen: aeronaves que han llegado, colisiones y combustible restante.
 
-<div style="page-break-before: always;"></div>
+**Ejemplo:** cada escenario en una función que prepara su tablero, y una sola función que lo ejecuta con el ATC.
+
+```cpp
+Tablero escenarioPersecucion() {
+    Tablero t(60, 60);
+    t.crear<Avion>("AV-01", Posicion{5, 30, 30}, Direccion::E).agregarPuntoRuta({55, 30, 30});
+    // ... el resto de aeronaves
+    return t;
+}
+
+void ejecutar(Tablero& tablero, Simulador& simulador, double segundos) {
+    ATC atc;
+    // ... el bucle de siempre y, al final, el resumen
+}
+```
 
 ## Entrega
 
