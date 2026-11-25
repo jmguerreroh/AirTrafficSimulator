@@ -14,6 +14,7 @@
 //   3. consumo = calcularConsumo(dt) ← tu código; el simulador lo descuenta
 //   4. ¿ha alcanzado el punto actual de su ruta? → siguiente punto (o Llegada)
 //   5. se pinta la casilla visitada y se detectan colisiones
+// Si en el paso 1 se sale del tablero, se estrella en el borde (FueraDeLimites) y no sigue.
 #pragma once
 
 #include <memory>
@@ -127,7 +128,7 @@ private:
     void asignarId(const std::string& id) { id_ = id; }
     void establecerLimitesTablero(int tamX, int tamY) { limiteX_ = tamX; limiteY_ = tamY; }
     void setEstado(EstadoAeronave e) { estado_ = e; }
-    void acotarAlTablero();          // impide salirse del tablero
+    bool acotarAlTablero();          // la deja en el borde si se ha salido; true si se salió
     void consumirCombustible(double cantidad);
     bool comprobarLlegada();         // avanza el punto de ruta si se alcanzó; true si cambió algo
     void revisarFinDeRuta();

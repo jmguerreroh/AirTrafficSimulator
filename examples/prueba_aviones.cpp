@@ -16,7 +16,7 @@ int main() {
     auto& av2 = tablero.crear<Avion>("AV-02", Posicion{55, 30, 70}, Direccion::W);
     av2.setVelocidad(14.0);
     av2.agregarPuntoRuta({10, 30, 70});
-    av2.agregarPuntoRuta({10, 5, 45});
+    av2.agregarPuntoRuta({15, 10, 55});
 
     ejecutar(simulador, tablero, 40.0, [] {}, 0.05, 10.0);
     simulador.fin();

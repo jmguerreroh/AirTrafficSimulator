@@ -149,7 +149,7 @@ void Renderer::buildDynamicScene(const Camera& camera, SceneBatches& out) const 
         if (it == displays_.end()) continue;
         const Display& d = it->second;
         const EstadoAeronave st = ac.getEstado();
-        const bool wreck = st == EstadoAeronave::Colisionada;
+        const bool wreck = st == EstadoAeronave::Colisionada || st == EstadoAeronave::FueraDeLimites;
         const bool dead = st == EstadoAeronave::SinCombustible;
 
         // Modelo 3D orientado según el rumbo.
@@ -215,13 +215,15 @@ void Renderer::buildDynamicScene(const Camera& camera, SceneBatches& out) const 
         }
     }
 
-    // Llamas de las colisiones aún recientes.
+    // Llamas de las colisiones y de las salidas del tablero aún recientes.
     const double duration = snapshot_->getConfiguracion().duracionExplosion;
-    for (const Colision& c : snapshot_->getColisiones()) {
-        const double age = snapshot_->getTiempo() - c.tiempo;
-        if (age < 0.0 || age > duration) continue;
-        appendExplosion(out, toScene(c.x, c.y, c.z), static_cast<float>(age / std::max(duration, 1e-6)), wallTime_, ms);
-    }
+    const auto flame = [&](double x, double y, double z, double when) {
+        const double age = snapshot_->getTiempo() - when;
+        if (age < 0.0 || age > duration) return;
+        appendExplosion(out, toScene(x, y, z), static_cast<float>(age / std::max(duration, 1e-6)), wallTime_, ms);
+    };
+    for (const Colision& c : snapshot_->getColisiones()) flame(c.x, c.y, c.z, c.tiempo);
+    for (const Salida& f : snapshot_->getSalidas()) flame(f.x, f.y, f.z, f.tiempo);
 }
 
 void Renderer::buildLabels(const Camera& camera, const glm::ivec2& fb, std::vector<InstanceData>& out) const {
@@ -311,7 +313,8 @@ void Renderer::buildHud(const glm::ivec2& fb, std::vector<InstanceData>& out) co
     {
         const std::string s = "T=" + format("%.1f", snapshot_->getTiempo()) + " S   AERONAVES: " +
                               std::to_string(snapshot_->getAeronaves().size()) + "   COLISIONES: " +
-                              std::to_string(snapshot_->getColisiones().size());
+                              std::to_string(snapshot_->getColisiones().size()) + "   FUERA: " +
+                              std::to_string(snapshot_->getSalidas().size());
         const float w = static_cast<float>(s.size() * kGlyphAdvance * k) + 2 * pad;
         const float x = static_cast<float>(fb.x) - w - 10;
         rect(x, 10, w, line + pad, panel);

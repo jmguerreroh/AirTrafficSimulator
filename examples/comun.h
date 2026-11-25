@@ -18,7 +18,8 @@ inline void mostrarResumen(const Tablero& t) {
         std::printf("          | %-6s %-12s %-15s %7.1f %6.0f%% %3zu/%-3zu\n", a->getId().c_str(), aTexto(a->getTipo()),
                     aTexto(a->getEstado()), a->getAltura(), a->getPorcentajeCombustible(), a->getIndiceRuta(), a->getRuta().size());
     }
-    std::printf("          | colisiones registradas: %zu\n", t.getColisiones().size());
+    std::printf("          | colisiones registradas: %zu | fuera del tablero: %zu\n", t.getColisiones().size(),
+                t.getSalidas().size());
 }
 
 // Bucle estándar de las pruebas: en cada iteración se llama a 'porPaso' (aquí iría el ATC), se avanza

@@ -18,6 +18,7 @@ int main() {
     const double dt = 0.05;
     ejecutar(simulador, tablero, 20.0, [&] { atc.actualizar(tablero.getAeronaves(), dt); }, dt, 5.0);
     std::cout << "Colisiones: " << tablero.getColisiones().size() << "\n";
+    std::cout << "Fuera del tablero: " << tablero.getSalidas().size() << "\n";
     simulador.fin();
     return 0;
 }

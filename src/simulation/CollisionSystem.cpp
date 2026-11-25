@@ -11,6 +11,11 @@ bool estanEnColision(const Aeronave& a, const Aeronave& b, const ConfiguracionSi
     return adyacentes && std::fabs(a.getAltura() - b.getAltura()) <= config.umbralColisionAltura;
 }
 
+// Restos de un accidente: un choque o una salida del tablero.
+static bool esResto(const Aeronave& a) {
+    return a.getEstado() == EstadoAeronave::Colisionada || a.getEstado() == EstadoAeronave::FueraDeLimites;
+}
+
 std::vector<std::pair<std::size_t, std::size_t>> detectarColisiones(
     const std::vector<std::unique_ptr<Aeronave>>& aeronaves, const ConfiguracionSimulacion& config) {
     std::vector<std::pair<std::size_t, std::size_t>> pares;
@@ -20,7 +25,7 @@ std::vector<std::pair<std::size_t, std::size_t>> detectarColisiones(
         for (std::size_t j = i + 1; j < aeronaves.size(); ++j) {
             const Aeronave& b = *aeronaves[j];
             if (b.getEstado() == EstadoAeronave::Llegada) continue;
-            if (a.getEstado() == EstadoAeronave::Colisionada && b.getEstado() == EstadoAeronave::Colisionada) continue;
+            if (esResto(a) && esResto(b)) continue;  // dos restos entre sí no chocan otra vez
             if (estanEnColision(a, b, config)) pares.emplace_back(i, j);
         }
     }

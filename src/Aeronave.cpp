@@ -179,10 +179,14 @@ void Aeronave::acercarAltura(double objetivo, double maxDelta) {
 
 // ----------------------------------------------------- lo que usa el Tablero (friend)
 
-void Aeronave::acotarAlTablero() {
-    x_ = std::clamp(x_, 0.0, static_cast<double>(limiteX_ - 1));
-    y_ = std::clamp(y_, 0.0, static_cast<double>(limiteY_ - 1));
+bool Aeronave::acotarAlTablero() {
+    const double x = std::clamp(x_, 0.0, static_cast<double>(limiteX_ - 1));
+    const double y = std::clamp(y_, 0.0, static_cast<double>(limiteY_ - 1));
+    const bool fuera = x != x_ || y != y_;
+    x_ = x;
+    y_ = y;
     z_ = std::clamp(z_, cfg_.alturaMinima, cfg_.alturaMaxima);
+    return fuera;
 }
 
 void Aeronave::consumirCombustible(double cantidad) {

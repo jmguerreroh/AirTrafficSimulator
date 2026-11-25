@@ -141,6 +141,7 @@ Cada fase incluye además un **ejemplo** corto. Los ejemplos enseñan a **usar**
 * **Mover una aeronave.** Hay dos maneras, y en las dos la aeronave solo se desplaza mientras el tablero avanza:
   * **Por ruta** (modo por defecto): se le dan puntos con `agregarPuntoRuta(p)` y el piloto automático va a ellos en orden.
   * **Manual:** `mover(Direccion::N)` fija una dirección y la aeronave la sigue hasta que se llame a `seguirRuta()`. Lanza `std::invalid_argument` si su tipo no permite esa dirección (`puedeMoverse(d)` lo comprueba antes).
+* **Los bordes.** Una aeronave que se sale del tablero se estrella en el borde (estado `FueraDeLimites`). Se cuenta aparte de las colisiones: `FUERA` en la ventana y `getSalidas()` en el código.
 * **Posiciones.** `Posicion{x, y, z}` son enteros (casilla y altura), y un `PuntoRuta` es lo mismo. Los valores exactos, con decimales, se leen con `getX()`, `getY()` y `getAltura()`.
 * **Rumbos en grados:** N = 0°, E = 90°, S = 180° y W = 270°.
 
@@ -230,7 +231,7 @@ Para escribir `puedeMoverse`, `mover` y la parte manual de `actualizar` te basta
 * `avanzar(90.0, 0.5)` desplaza la aeronave media casilla hacia el Este.
 * `girarHaciaGrados(180.0, 10.0)` gira el rumbo hacia el Sur, como mucho 10°.
 
-**Comprobación:** las órdenes válidas mueven la aeronave y las imposibles lanzan la excepción. El historial de casillas muestra el recorrido.
+**Comprobación:** las órdenes válidas mueven la aeronave y las imposibles lanzan la excepción. El historial de casillas muestra el recorrido. Si dejas que una aeronave siga recta hasta el borde, se estrella y el contador `FUERA` sube.
 
 **Cuestión:** `mover` es un método virtual puro de `Aeronave`. Cuando escribes `aeronave->mover(d)` sobre un puntero a `Aeronave`, ¿cómo sabe el programa qué versión ejecutar? ¿Qué pasaría si `mover` no fuera virtual?
 
@@ -414,20 +415,21 @@ std::sort(orden.begin(), orden.end(), [](const Aeronave* x, const Aeronave* y) {
 
 ### 6.5 Emergencias y obstáculos
 
-Las aeronaves `SinCombustible` y `Colisionada` se quedan quietas y **siguen siendo obstáculos**. Tu ATC debe desviar a quien vaya a pasar por encima de ellas. Fíjate en que `estaActiva()` es falso para ellas: si tu recorrido de parejas las salta, no las verás.
+Las aeronaves `SinCombustible`, `Colisionada` y `FueraDeLimites` se quedan quietas y **siguen siendo obstáculos**. Tu ATC debe desviar a quien vaya a pasar por encima de ellas. Fíjate en que `estaActiva()` es falso para ellas: si tu recorrido de parejas las salta, no las verás.
 
 **Ejemplo:**
 
 ```cpp
-const bool obstaculo = a.getEstado() == EstadoAeronave::SinCombustible ||
-                       a.getEstado() == EstadoAeronave::Colisionada;
+const EstadoAeronave e = a.getEstado();
+const bool obstaculo = e == EstadoAeronave::SinCombustible || e == EstadoAeronave::Colisionada ||
+                       e == EstadoAeronave::FueraDeLimites;
 ```
 
 ### 6.6 Prueba de estrés
 
 Monta una escena con **8 o más aeronaves** de los tres tipos, con rutas que se crucen y alguna con poco combustible. Tu ATC debe mantener la seguridad durante toda la simulación.
 
-**Comprobación:** `./build/test_atc` ejecuta sin ventana cuatro escenas (las de `prueba_colisiones`, `ejemplo_atc` y `prueba_varias`, y una de diez aeronaves que se cruzan en el centro) y exige en todas 0 colisiones, ninguna aeronave sin combustible y que todas las que tienen ruta lleguen a su destino. Cuando todo está bien, termina con `TODAS LAS COMPROBACIONES OK`.
+**Comprobación:** `./build/test_atc` ejecuta sin ventana cuatro escenas (las de `prueba_colisiones`, `ejemplo_atc` y `prueba_varias`, y una de diez aeronaves que se cruzan en el centro) y exige en todas 0 colisiones, ninguna aeronave fuera del tablero ni sin combustible y que todas las que tienen ruta lleguen a su destino. Cuando todo está bien, termina con `TODAS LAS COMPROBACIONES OK`.
 
 **Requisitos mínimos del ATC:**
 
@@ -439,6 +441,7 @@ Monta una escena con **8 o más aeronaves** de los tres tipos, con rutas que se 
 6. Priorizar aeronaves (poco combustible o emergencias primero).
 7. Reaccionar a emergencias y obstáculos.
 8. Mantener la seguridad con 8 o más aeronaves.
+9. No dejar que ninguna aeronave se salga del tablero (cuidado con los desvíos cerca de los bordes y con el giro de los aviones).
 
 **Cuestión:** para mandar a un dron a esperar necesitas `esperarEn`, que solo tiene `Dron`. ¿Cómo lo resolverías sin `dynamic_cast`? ¿Qué método podrías añadir a la interfaz común para que el ATC no necesite saber el tipo?
 
@@ -451,7 +454,7 @@ En `main.cpp`, crea al menos **3 escenarios** distintos y ejecútalos con tu ATC
 * **Reserva:** varias aeronaves con poco combustible que compiten por pasar.
 * **Obstáculo:** una aeronave sin combustible en mitad de una ruta muy transitada.
 
-Al terminar cada escenario, muestra por consola un resumen: aeronaves que han llegado, colisiones y combustible restante.
+Al terminar cada escenario, muestra por consola un resumen: aeronaves que han llegado, colisiones, salidas del tablero y combustible restante.
 
 **Ejemplo:** cada escenario en una función que prepara su tablero, y una sola función que lo ejecuta con el ATC.
 
@@ -481,6 +484,6 @@ void ejecutar(Tablero& tablero, Simulador& simulador, double segundos) {
 |---|---|---|
 | Aeronaves (fases 2 a 4) | `test_aeronaves` pasa y los programas de prueba se comportan como describe la tabla de «Programas para comprobar tu trabajo» | 25 % |
 | Diseño orientado a objetos | herencia y polimorfismo bien usados, atributos privados, sin código duplicado entre los tres tipos y sin `dynamic_cast` injustificados | 20 % |
-| ATC: seguridad (fase 6.1 a 6.3 y 6.6) | `test_atc` pasa y tu escena de 8 o más aeronaves termina sin colisiones | 30 % |
+| ATC: seguridad (fase 6.1 a 6.3 y 6.6) | `test_atc` pasa y tu escena de 8 o más aeronaves termina sin colisiones ni salidas del tablero | 30 % |
 | Rutas, combustible y emergencias (fases 5, 6.4 y 6.5) | los tres casos de la fase 5; ninguna aeronave sin combustible si podía evitarse; prioridades y obstáculos bien resueltos | 10 % |
 | Calidad, escenarios y memoria (fase 7) | código legible y sin avisos al compilar, los 3 escenarios propios y la memoria con las cuestiones respondidas | 15 % |

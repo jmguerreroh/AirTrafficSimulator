@@ -132,6 +132,10 @@ suroeste. Rumbos en grados: 0° = Norte, 90° = Este, 180° = Sur, 270° = Oeste
   anillo con el id de su aeronave.
 * **Historial**: cada casilla conserva el color de la **última aeronave que pasó** por ella.
 * **Colisión**: una **llama 3D** durante unos segundos; los restos quedan oscuros (estado `Colisionada`).
+* **Salida del tablero**: la aeronave se estrella en el borde, con la misma llama, y sus restos quedan allí
+  (estado `FueraDeLimites`). Son un obstáculo, como los de una colisión.
+* **Resumen** (arriba a la derecha): tiempo, número de aeronaves, colisiones (`COLISIONES`) y salidas del
+  tablero (`FUERA`).
 * **Sin combustible**: aeronave gris e inmóvil (`SinCombustible`), sigue siendo un obstáculo.
 * **Clic sobre una aeronave** → panel con ID, tipo, altura, velocidad, combustible, destino, estado y modo.
 

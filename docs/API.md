@@ -84,6 +84,7 @@ El **rumbo** es un ángulo en grados que crece en sentido horario, como una brú
 | `Llegada` | completó su ruta. Sigue visible y no gasta combustible | no | no, está fuera del tráfico |
 | `SinCombustible` | se le acabó el combustible | no | sí, es un **obstáculo** |
 | `Colisionada` | ha chocado | no | sí, sus restos son un **obstáculo** |
+| `FueraDeLimites` | se ha salido del tablero y se ha estrellado en el borde | no | sí, sus restos son un **obstáculo** |
 
 `estaActiva()` es `true` solo en `Volando` y `Estacionaria`. Una aeronave en `Llegada` que recibe un punto de ruta nuevo vuelve a `Volando`.
 
@@ -264,6 +265,7 @@ tablero.avanzar(0.05);      // el mundo avanza 0,05 s
 | `avanzar(dt)` | hace avanzar el mundo `dt` segundos (`dt` > 0) |
 | `getTiempo()` | segundos de simulación transcurridos |
 | `getColisiones()` | `std::vector<Colision>` con todas las colisiones, en orden |
+| `getSalidas()` | `std::vector<Salida>` con las aeronaves que se han salido del tablero, en orden |
 | `getCelda(x, y)` | `CeldaHistorial` de esa casilla. Lanza `std::out_of_range` si está fuera |
 | `posicionValida(p)` | si `p` está dentro del tablero y entre 0 y el techo (120). No mira los límites de cada tipo |
 | `getTamX()`, `getTamY()` | dimensiones |
@@ -276,6 +278,7 @@ tablero.avanzar(0.05);      // el mundo avanza 0,05 s
 
 ```cpp
 struct Colision { std::string idA, idB; double x, y, z; double tiempo; };       // punto medio e instante
+struct Salida { std::string id; double x, y, z; double tiempo; };              // punto del borde e instante
 struct CeldaHistorial { bool visitada; Color color; std::string idUltimo; };   // última aeronave que pasó
 ```
 
@@ -284,15 +287,19 @@ struct CeldaHistorial { bool visitada; Color color; std::string idUltimo; };   /
 `dt` se divide en subpasos `h` de como mucho `pasoMaximo` (0,025 s), para que ninguna aeronave «atraviese» a otra sin detectarse. **La simulación depende solo de `dt`, no de los FPS de la ventana.** En cada subpaso, para cada aeronave activa:
 
 1. Se llama a `actualizar(h)` (**tu código**, que la mueve).
-2. Se impide que salga del tablero, y su estado pasa a `Volando` o `Estacionaria` según se haya desplazado o no.
+2. Si se ha salido del tablero, se queda en el borde, pasa a `FueraDeLimites`, se registra una `Salida` y no sigue. Si no, su estado pasa a `Volando` o `Estacionaria` según se haya desplazado o no.
 3. Se descuenta `calcularConsumo(h)` (**tu código**). Si el combustible se agota, pasa a `SinCombustible`.
 4. Si ha alcanzado su destino, pasa al siguiente punto. Si era el último, pasa a `Llegada`.
 
 Después se pinta la casilla con el color de cada aeronave y se detectan las colisiones.
 
+### Salidas del tablero
+
+Una aeronave cuyo `actualizar` la lleve fuera del tablero (`x` o `y` por debajo de 0 o por encima de `tamX − 1` o `tamY − 1`) se estrella: se queda en el borde, pasa a `FueraDeLimites`, se registra una `Salida` y en la ventana aparece la misma llama que en una colisión. Sus restos son un obstáculo. Las salidas se cuentan aparte de las colisiones (`getSalidas()` y `FUERA` en la ventana).
+
 ### Colisiones
 
-Dos aeronaves colisionan cuando sus casillas son **adyacentes** (o la misma) y su diferencia de altura es como mucho `umbralColisionAltura` (2,0). Por defecto, adyacentes son las 8 casillas que rodean a una. Las dos pasan a `Colisionada`, se registra una `Colision` y en la ventana aparece una llama unos segundos. Dos restos no generan colisiones nuevas entre sí. Todo esto se configura en `ConfiguracionSimulacion`.
+Dos aeronaves colisionan cuando sus casillas son **adyacentes** (o la misma) y su diferencia de altura es como mucho `umbralColisionAltura` (2,0). Por defecto, adyacentes son las 8 casillas que rodean a una. Las dos pasan a `Colisionada`, se registra una `Colision` y en la ventana aparece una llama unos segundos. Dos restos (de una colisión o de una salida del tablero) no generan colisiones nuevas entre sí. Todo esto se configura en `ConfiguracionSimulacion`.
 
 ## Simulador
 
@@ -347,7 +354,7 @@ simulador.fin();                        // cierra y libera todo
 |---|---|
 | `umbralColisionAltura` | diferencia de altura máxima para chocar (2,0) |
 | `colisionEnDiagonales` | `true`: adyacentes son las 8 casillas de alrededor. `false`: solo N, E, S y W |
-| `duracionExplosion` | segundos que se ve la llama tras un choque (5) |
+| `duracionExplosion` | segundos que se ve la llama tras un choque o una salida del tablero (5) |
 | `pasoMaximo` | tamaño máximo de los subpasos de `avanzar` (0,025 s) |
 | `alturaMaximaTablero` | techo del espacio aéreo (120) |
 

@@ -182,6 +182,23 @@ int main() {
         CHECK(t.getCelda(10, 20).idUltimo == "DR-01" || t.getCelda(10, 20).idUltimo == "HE-01");
     }
 
+    // ---- Salirse del tablero: se estrella en el borde y sus restos son un obstáculo --------
+    {
+        Tablero t(20, 20);
+        auto& he = t.crear<Helicoptero>("HE-01", Posicion{16, 10, 10});
+        he.mover(Direccion::E);
+        simular(t, 3.0);
+        CHECK(he.getEstado() == EstadoAeronave::FueraDeLimites && !he.estaActiva());
+        CHECK(t.getSalidas().size() == 1 && t.getSalidas()[0].id == "HE-01");
+        CHECK(he.getX() == 19.0 && std::fabs(he.getY() - 10.0) < 1e-9);  // se queda en el borde
+        CHECK(t.getColisiones().empty());
+        auto& dr = t.crear<Dron>("DR-01", Posicion{15, 10, 10});  // choca contra los restos
+        dr.mover(Direccion::E);
+        simular(t, 2.0);
+        CHECK(dr.getEstado() == EstadoAeronave::Colisionada && t.getColisiones().size() == 1);
+        CHECK(t.getSalidas().size() == 1);
+    }
+
     // ---- avanzar(dt) es independiente del tamaño de dt -------------------------------
     {
         auto vuelo = [](double dt) {

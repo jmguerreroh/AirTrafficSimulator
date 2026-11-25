@@ -23,6 +23,7 @@ Tablero Tablero::clonar() const {
     copia.tiempo_ = tiempo_;
     copia.celdas_ = celdas_;
     copia.colisiones_ = colisiones_;
+    copia.salidas_ = salidas_;
     copia.aeronaves_.reserve(aeronaves_.size());
     for (const auto& a : aeronaves_) copia.aeronaves_.push_back(a->clonar());
     return copia;
@@ -103,11 +104,15 @@ void Tablero::avanzar(double dt) {
 void Tablero::paso(double h) {
     for (auto& ptr : aeronaves_) {
         Aeronave& a = *ptr;
-        if (!a.estaActiva()) continue;  // Llegada, SinCombustible y Colisionada no se mueven
+        if (!a.estaActiva()) continue;  // Llegada, SinCombustible, Colisionada y FueraDeLimites no se mueven
 
         const double x0 = a.getX(), y0 = a.getY();
         a.actualizar(h);                // ← lógica de movimiento de cada tipo
-        a.acotarAlTablero();
+        if (a.acotarAlTablero()) {      // se ha salido: se estrella en el borde
+            a.setEstado(EstadoAeronave::FueraDeLimites);
+            salidas_.push_back({a.getId(), a.getX(), a.getY(), a.getAltura(), tiempo_ + h});
+            continue;
+        }
 
         const bool seMovio = std::hypot(a.getX() - x0, a.getY() - y0) > 1e-9;
         a.setEstado(seMovio ? EstadoAeronave::Volando : EstadoAeronave::Estacionaria);

@@ -5,8 +5,8 @@
 //      sin diagonales, distancia de Manhattan <= 1;
 //   2. |alturaA - alturaB| <= config.umbralColisionAltura.
 // Las aeronaves en estado Llegada quedan fuera del tráfico y no colisionan. Los restos
-// (Colisionada) y las aeronaves SinCombustible sí son obstáculos. Dos restos entre sí no generan
-// colisiones nuevas.
+// (Colisionada o FueraDeLimites) y las aeronaves SinCombustible sí son obstáculos. Dos restos
+// entre sí no generan colisiones nuevas.
 #pragma once
 
 #include <memory>

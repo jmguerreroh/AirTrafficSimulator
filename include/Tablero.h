@@ -23,6 +23,13 @@ struct CeldaHistorial {
     std::string idUltimo;    // id de esa aeronave
 };
 
+// Una aeronave que se ha salido del tablero: se estrella en el borde (estado FueraDeLimites).
+struct Salida {
+    std::string id;
+    double x = 0, y = 0, z = 0;  // punto del borde donde se estrelló
+    double tiempo = 0;           // instante de simulación en el que ocurrió
+};
+
 struct Colision {
     std::string idA;
     std::string idB;
@@ -73,6 +80,7 @@ public:
 
     bool posicionValida(const Posicion& p) const;
     const std::vector<Colision>& getColisiones() const { return colisiones_; }  // todas, en orden
+    const std::vector<Salida>& getSalidas() const { return salidas_; }           // aeronaves que se salieron
     const CeldaHistorial& getCelda(int x, int y) const;                        // std::out_of_range si fuera
 
 private:
@@ -86,4 +94,5 @@ private:
     std::vector<std::unique_ptr<Aeronave>> aeronaves_;
     std::vector<CeldaHistorial> celdas_;
     std::vector<Colision> colisiones_;
+    std::vector<Salida> salidas_;
 };

@@ -9,6 +9,7 @@ enum class EstadoAeronave {
     SinCombustible,  // combustible agotado: queda inmóvil (sigue siendo un obstáculo)
     Llegada,         // completó su ruta: permanece visible, inmóvil, fuera del tráfico (no colisiona)
     Colisionada,     // ha chocado: queda inmóvil como restos (sigue siendo un obstáculo)
+    FueraDeLimites,  // se ha salido del tablero: se estrella en el borde (sus restos son un obstáculo)
 };
 
 // Quién manda sobre la aeronave.
@@ -34,6 +35,7 @@ inline const char* aTexto(EstadoAeronave e) {
         case EstadoAeronave::SinCombustible: return "SinCombustible";
         case EstadoAeronave::Llegada: return "Llegada";
         case EstadoAeronave::Colisionada: return "Colisionada";
+        case EstadoAeronave::FueraDeLimites: return "FueraDeLimites";
     }
     return "?";
 }

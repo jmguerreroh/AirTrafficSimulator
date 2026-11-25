@@ -42,6 +42,7 @@ int main() {
     }
 
     std::cout << "Colisiones: " << tablero.getColisiones().size() << "\n";
+    std::cout << "Fuera del tablero: " << tablero.getSalidas().size() << "\n";
     simulador.esperarCierre();
     simulador.fin();
     return 0;
