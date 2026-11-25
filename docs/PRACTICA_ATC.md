@@ -113,14 +113,14 @@ Se ejecutan igual que tu programa, por ejemplo `./build/prueba_drones`. Mientras
 
 ## Material
 
-* [API](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/docs/API.md): referencia de las clases y reglas de cada tipo de aeronave. [README](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/README.md): sistema de coordenadas, qué se ve en pantalla y controles.
+* [API](API.md): referencia de las clases y reglas de cada tipo de aeronave. [README](../README.md): sistema de coordenadas, qué se ve en pantalla y controles.
 * `include/Configuracion.h` del simulador: todos los números de la práctica (velocidades, alturas, consumos, umbral de colisión). Solo lectura.
 
 ## Cómo está organizado el guion
 
 La práctica se hace **por fases**. Cada fase añade una sola cosa nueva, tiene algo que **ver** en la ventana y una forma de **comprobar** que está bien antes de seguir. Al final de cada fase hay una **cuestión** para la memoria.
 
-Cada fase incluye además un **ejemplo** corto. Los ejemplos enseñan a **usar** el simulador desde `main.cpp` o desde el ATC. El código de cada aeronave lo escribes tú, con las herramientas de la [API](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/docs/API.md) y las pistas de cada fase.
+Cada fase incluye además un **ejemplo** corto. Los ejemplos enseñan a **usar** el simulador desde `main.cpp` o desde el ATC. El código de cada aeronave lo escribes tú, con las herramientas de la [API](API.md) y las pistas de cada fase.
 
 | Fase | Qué haces | Qué ves |
 |---|---|---|
@@ -272,7 +272,7 @@ Pistas para el modo `Ruta` de `actualizar`: si hay destino (`tieneDestino()`), a
 
 ## Fase 4. Combustible
 
-1. Implementa `calcularConsumo(dt)` en los tres tipos, con las fórmulas de [la API](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/docs/API.md#reglas-por-tipo):
+1. Implementa `calcularConsumo(dt)` en los tres tipos, con las fórmulas de [la API](API.md#reglas-por-tipo):
    * el avión siempre gasta (consumo base más un término proporcional a la velocidad);
    * el helicóptero gasta **también cuando está quieto** (vuelo estacionario);
    * el dron gasta poco, pero su depósito es pequeño.
