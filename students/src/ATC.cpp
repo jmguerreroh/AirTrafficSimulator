@@ -1,5 +1,8 @@
 // ATC.cpp - PLANTILLA PARA EL ALUMNO
 // Aquí va tu sistema de control de tráfico aéreo.
+#include <algorithm>
+#include <iostream>
+
 #include "ATC.h"
 
 void ATC::actualizar(std::vector<std::unique_ptr<Aeronave>>& aeronaves, double dt) {

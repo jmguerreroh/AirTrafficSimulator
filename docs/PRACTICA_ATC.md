@@ -113,14 +113,14 @@ Se ejecutan igual que tu programa, por ejemplo `./build/prueba_drones`. Mientras
 
 ## Material
 
-* [API](API.md): referencia de las clases y reglas de cada tipo de aeronave. [README](../README.md): sistema de coordenadas, qué se ve en pantalla y controles.
+* [API](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/docs/API.md): referencia de las clases y reglas de cada tipo de aeronave. [README](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/README.md): sistema de coordenadas, qué se ve en pantalla y controles.
 * `include/Configuracion.h` del simulador: todos los números de la práctica (velocidades, alturas, consumos, umbral de colisión). Solo lectura.
 
 ## Cómo está organizado el guion
 
 La práctica se hace **por fases**. Cada fase añade una sola cosa nueva, tiene algo que **ver** en la ventana y una forma de **comprobar** que está bien antes de seguir. Al final de cada fase hay una **cuestión** para la memoria.
 
-Cada fase incluye además un **ejemplo** corto. Los ejemplos enseñan a **usar** el simulador desde `main.cpp` o desde el ATC. El código de cada aeronave lo escribes tú, con las herramientas de la [API](API.md) y las pistas de cada fase.
+Cada fase incluye además un **ejemplo** corto. Los ejemplos enseñan a **usar** el simulador desde `main.cpp` o desde el ATC. El código de cada aeronave lo escribes tú, con las herramientas de la [API](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/docs/API.md) y las pistas de cada fase.
 
 | Fase | Qué haces | Qué ves |
 |---|---|---|
@@ -167,6 +167,8 @@ Ejecútalo antes de cambiar nada (`./build/MiATC`) y lee el código para entende
    tablero.crear<Dron>("DR-02", Posicion{50, 50, 5});
    ```
 
+   `AV-03` no tiene ruta, así que seguirá recto hasta salirse del tablero (`FUERA`). Es lo esperado: dale una ruta si quieres que llegue a algún sitio.
+
    Ejecuta y localízalas en la ventana. Haz **clic** sobre cada una para ver su panel (tipo, altura, combustible...). Usa la vista cenital (tecla `2`) para comprobar las coordenadas: `x` crece hacia el Este y `y` hacia el Norte.
 2. Cambia las alturas y observa la **sombra y la línea vertical**: así se lee la altura en 3D.
 3. Provoca errores a propósito: una aeronave fuera del tablero, dos con el mismo id, un avión a una altura que no admite. Cada caso lanza una excepción. Captúrala con `try`/`catch` y muestra el mensaje con `e.what()`:
@@ -204,8 +206,8 @@ Empieza por lo más sencillo: que cada aeronave sepa **hacia dónde puede ir** y
 2. Implementa `mover(d)`: si no puede ir en esa dirección, lanza `std::invalid_argument`. Si puede, pasa a modo `Manual` y guarda el rumbo pedido.
 3. Implementa **solo la parte manual** de `actualizar(dt)`: en modo `Manual`, avanzar en el rumbo ordenado `getVelocidad() * dt` casillas con `avanzar(...)`. En el avión, gira poco a poco hacia ese rumbo con `girarHaciaGrados(...)` antes de avanzar. El resto de `actualizar` lo completarás en la fase 3.
 4. En `main.cpp`, da órdenes y observa:
-   * `he.mover(Direccion::N)`: el helicóptero avanza hacia el Norte y pinta las casillas de su color.
-   * `av.mover(Direccion::W)` con el avión mirando al Este: debe lanzar una excepción, porque el Oeste queda justo detrás (180°). Con `Direccion::S` (90°, en perpendicular) sí puede: el avión gira suavemente hasta ir hacia el Sur.
+   * `he1.mover(Direccion::N)`: el helicóptero avanza hacia el Norte y pinta las casillas de su color.
+   * `av1.mover(Direccion::W)` con el avión mirando al Este: debe lanzar una excepción, porque el Oeste queda justo detrás (180°). Con `Direccion::S` (90°, en perpendicular) sí puede: el avión gira suavemente hasta ir hacia el Sur.
    * Haz que un helicóptero **dibuje un cuadrado**: cambia su dirección cada pocos segundos usando `tablero.getTiempo()` dentro del bucle.
 
 **Ejemplo:** un helicóptero que va hacia el Norte y, a los 5 segundos, gira hacia el Este.
@@ -270,7 +272,7 @@ Pistas para el modo `Ruta` de `actualizar`: si hay destino (`tieneDestino()`), a
 
 ## Fase 4. Combustible
 
-1. Implementa `calcularConsumo(dt)` en los tres tipos, con las fórmulas de [la API](API.md#reglas-por-tipo):
+1. Implementa `calcularConsumo(dt)` en los tres tipos, con las fórmulas de [la API](https://github.com/jmguerreroh/AirTrafficSimulator/blob/main/docs/API.md#reglas-por-tipo):
    * el avión siempre gasta (consumo base más un término proporcional a la velocidad);
    * el helicóptero gasta **también cuando está quieto** (vuelo estacionario);
    * el dron gasta poco, pero su depósito es pequeño.
