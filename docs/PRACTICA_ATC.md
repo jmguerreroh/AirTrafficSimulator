@@ -167,6 +167,8 @@ Ejecútalo antes de cambiar nada (`./build/MiATC`) y lee el código para entende
    tablero.crear<Dron>("DR-02", Posicion{50, 50, 5});
    ```
 
+   `AV-03` no tiene ruta, así que seguirá recto hasta salirse del tablero (`FUERA`). Es lo esperado: dale una ruta si quieres que llegue a algún sitio.
+
    Ejecuta y localízalas en la ventana. Haz **clic** sobre cada una para ver su panel (tipo, altura, combustible...). Usa la vista cenital (tecla `2`) para comprobar las coordenadas: `x` crece hacia el Este y `y` hacia el Norte.
 2. Cambia las alturas y observa la **sombra y la línea vertical**: así se lee la altura en 3D.
 3. Provoca errores a propósito: una aeronave fuera del tablero, dos con el mismo id, un avión a una altura que no admite. Cada caso lanza una excepción. Captúrala con `try`/`catch` y muestra el mensaje con `e.what()`:
